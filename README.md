@@ -1,8 +1,10 @@
 # MOOCbase
 
+![The official unofficial mascot of the class projects](images/derpydb-small.jpg)
+
 This repo contains a bare-bones database implementation, which supports
 executing simple transactions in series. In the assignments of
-this class, you will be adding to this implementation, adding support for
+this class, you will be adding support for
 B+ tree indices, efficient join algorithms, query optimization, multigranularity
 locking to support concurrent execution of transactions, and database recovery.
 
@@ -91,22 +93,19 @@ run tests.
 
 ## The code
 
-The code is located in the `src/main/java/edu/berkeley/cs186/database`
-directory, while the tests are located in the
-`src/test/java/edu/berkeley/cs186/database` directory.
+As you will be working with this codebase for the rest of the semester, it is a good idea to get familiar with it. The code is located in the `src/main/java/edu/berkeley/cs186/database` directory, while the tests are located in the `src/test/java/edu/berkeley/cs186/database directory`. The following is a brief overview of each of the major sections of the codebase.
 
 ### cli
 
-The `cli` directory contains all the logic for the database's command line
-interface. Running the main method of `CommandLineInterface.java` will create
-an instance of the database and create a simple text interface that you can
-send and review the results of queries in. The subdirectory `cli/parser` contains
-a lot of scary looking code! Don't be intimidated, this is all automatically
-generated automatically from the file `MoocParser.jjt` in the root directory of
-the repo and handles the logic to convert from user inputted queries (in the
-format of strings) into objects that the underlying database knows how to work
-with. You will **not** need to have a detailed understanding of how anything
-in this directory works.
+The cli directory contains all the logic for the database's command line interface. Running the main method of CommandLineInterface.java will create an instance of the database and create a simple text interface that you can send and review the results of queries in. **The inner workings of this section are beyond the scope of the class** (although you're free to look around), you'll just need to know how to run the Command Line Interface.
+
+#### cli/parser
+
+The subdirectory cli/parser contains a lot of scary looking code! Don't be intimidated, this is all automatically generated automatically from the file MoocParser.jjt in the root directory of the repo. The code here handles the logic to convert from user inputted queries (strings) into a tree of nodes representing the query (parse tree).
+
+#### cli/visitor
+
+The subdirectory cli/visitor contains classes that help traverse the trees created from the parser and create objects that the database can work with directly.
 
 ### common
 
