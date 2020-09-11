@@ -83,6 +83,7 @@ public class TestInnerNode {
     // not affect our the in-memory values of our members. Also note that all
     // of these members are initialized by resetMembers before every test case
     // is run.
+
     private List<DataBox> innerKeys;
     private List<Long> innerChildren;
     private InnerNode inner;

@@ -121,6 +121,9 @@ public class TestBPlusTree {
     @Test
     @Category(PublicTests.class)
     public void testSimpleBulkLoad() {
+        // Creates a B+ Tree with order 2, fillFactor 0.75 and attempts to bulk
+        // load 11 values.
+
         BPlusTree tree = getBPlusTree(Type.intType(), 2);
         float fillFactor = 0.75f;
         assertEquals("()", tree.toSexp());
@@ -145,6 +148,9 @@ public class TestBPlusTree {
     @Test
     @Category(PublicTests.class)
     public void testWhiteBoxTest() {
+        // This test will insert values one by one into your B+ tree implementation.
+        // We've provided a visualization of how your tree should be structured
+        // after each step.
         BPlusTree tree = getBPlusTree(Type.intType(), 1);
         assertEquals("()", tree.toSexp());
 
@@ -401,6 +407,15 @@ public class TestBPlusTree {
     @Test
     @Category(PublicTests.class)
     public void testRandomPuts() {
+        // This test will generate 1000 keys and for trees of degree 2, 3 and 4
+        // will scramble the keys and attempt to insert them.
+        //
+        // After insertion we test scanAll and scanGreaterEqual to ensure all
+        // the keys were inserted and could be retrieved in the proper order.
+        //
+        // Finally, we remove each of the keys one-by-one and check to see that
+        // they can no longer be retrieved.
+
         List<DataBox> keys = new ArrayList<>();
         List<RecordId> rids = new ArrayList<>();
         List<RecordId> sortedRids = new ArrayList<>();

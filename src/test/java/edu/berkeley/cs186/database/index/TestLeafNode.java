@@ -141,9 +141,13 @@ public class TestLeafNode {
         for (int i = 0; i < 2 * d; ++i) {
             DataBox key = new IntDataBox(i);
             RecordId rid = new RecordId(i, (short) i);
+
+            // Leaf should never overflow during the first 2d puts
             assertEquals(Optional.empty(), leaf.put(key, rid));
 
             for (int j = 0; j <= i; ++j) {
+                // Test that all RecordIds inserted up to this point are still
+                // present
                 key = new IntDataBox(j);
                 rid = new RecordId(j, (short) j);
                 assertEquals(Optional.of(rid), leaf.getKey(key));
@@ -154,6 +158,7 @@ public class TestLeafNode {
     @Test
     @Category(PublicTests.class)
     public void testNoOverflowPutsFromDisk() {
+        // Requires both fromBytes and put to be implemented correctly.
         int d = 5;
         setBPlusTreeMetadata(Type.intType(), d);
         LeafNode leaf = getEmptyLeaf(Optional.empty());
@@ -178,6 +183,8 @@ public class TestLeafNode {
     @Test(expected = BPlusTreeException.class)
     @Category(PublicTests.class)
     public void testDuplicatePut() {
+        // Tests that a BPlusTreeException is thrown on duplicate put
+
         setBPlusTreeMetadata(Type.intType(), 4);
         LeafNode leaf = getEmptyLeaf(Optional.empty());
 
@@ -191,6 +198,10 @@ public class TestLeafNode {
     @Test
     @Category(PublicTests.class)
     public void testSimpleRemoves() {
+        // Puts 2d keys into the leaf, then removes and checks that they can no
+        // be retrieved.
+        // Requires put, get and remove to be implemented to pass.
+
         int d = 5;
         setBPlusTreeMetadata(Type.intType(), d);
         LeafNode leaf = getEmptyLeaf(Optional.empty());
@@ -214,6 +225,9 @@ public class TestLeafNode {
     @Test
     @Category(PublicTests.class)
     public void testScanAll() {
+        // Inserts 10 entries into an empty leaf and tests that scanAll retrieves
+        // the RecordId's in correct order.
+
         int d = 5;
         setBPlusTreeMetadata(Type.intType(), d);
         LeafNode leaf = getEmptyLeaf(Optional.empty());
@@ -229,12 +243,16 @@ public class TestLeafNode {
             assertTrue(iter.hasNext());
             assertEquals(new RecordId(i, (short) i), iter.next());
         }
+
+        // Iterator should be out of values after 10 calls to iter.next()
         assertFalse(iter.hasNext());
     }
 
     @Test
     @Category(PublicTests.class)
     public void testScanGreaterEqual() {
+        // Same as above but only checks the latter 5 values with scanGreaterEqual
+
         int d = 5;
         setBPlusTreeMetadata(Type.intType(), d);
         LeafNode leaf = getEmptyLeaf(Optional.empty());
@@ -291,6 +309,8 @@ public class TestLeafNode {
     @Test
     @Category(PublicTests.class)
     public void testToAndFromBytes() {
+        // Tests that leaf nodes are properly serialized and deserialized
+
         int d = 5;
         setBPlusTreeMetadata(Type.intType(), d);
 

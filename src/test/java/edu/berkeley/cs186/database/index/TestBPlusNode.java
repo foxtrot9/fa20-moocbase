@@ -59,6 +59,9 @@ public class TestBPlusNode {
     @Test
     @Category(PublicTests.class)
     public void testFromBytes() {
+        // Test deserialization for both leaf nodes and inner nodes
+        // This test should be passing after you implement LeafNode::fromBytes
+
         // Leaf node.
         List<DataBox> leafKeys = new ArrayList<>();
         List<RecordId> leafRids = new ArrayList<>();
