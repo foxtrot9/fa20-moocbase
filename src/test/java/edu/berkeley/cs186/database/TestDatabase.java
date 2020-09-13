@@ -5,6 +5,7 @@ import edu.berkeley.cs186.database.common.PredicateOperator;
 import edu.berkeley.cs186.database.databox.*;
 import edu.berkeley.cs186.database.query.QueryPlan;
 import edu.berkeley.cs186.database.table.*;
+import edu.berkeley.cs186.database.table.Record;
 
 import org.junit.After;
 import org.junit.Before;

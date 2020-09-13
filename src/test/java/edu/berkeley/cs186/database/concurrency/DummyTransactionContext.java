@@ -12,6 +12,7 @@ import edu.berkeley.cs186.database.databox.DataBox;
 import edu.berkeley.cs186.database.index.BPlusTreeMetadata;
 import edu.berkeley.cs186.database.memory.Page;
 import edu.berkeley.cs186.database.table.*;
+import edu.berkeley.cs186.database.table.Record;
 import edu.berkeley.cs186.database.table.stats.TableStats;
 
 /**

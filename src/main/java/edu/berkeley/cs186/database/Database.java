@@ -24,6 +24,7 @@ import edu.berkeley.cs186.database.query.QueryPlanException;
 import edu.berkeley.cs186.database.query.SortOperator;
 import edu.berkeley.cs186.database.recovery.*;
 import edu.berkeley.cs186.database.table.*;
+import edu.berkeley.cs186.database.table.Record;
 import edu.berkeley.cs186.database.table.stats.TableStats;
 
 /**

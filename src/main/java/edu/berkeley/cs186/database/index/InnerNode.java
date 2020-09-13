@@ -41,7 +41,7 @@ class InnerNode extends BPlusNode {
     // The keys and child pointers of this inner node. See the comment above
     // LeafNode.keys and LeafNode.rids in LeafNode.java for a warning on the
     // difference between the keys and children here versus the keys and children
-    // stored on disk.
+    // stored on disk. `keys` is always stored in ascending order.
     private List<DataBox> keys;
     private List<Long> children;
 
