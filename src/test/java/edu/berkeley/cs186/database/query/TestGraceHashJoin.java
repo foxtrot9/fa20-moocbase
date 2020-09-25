@@ -46,11 +46,11 @@ public class TestGraceHashJoin {
     }
 
     /**
-     * Sanity Test to make sure NHJ works. You should pass this without having touched GHJ.
+     * Sanity Test to make sure SNJ works. You should pass this without having touched GHJ.
      */
     @Test
-    @Category(PublicTests.class)
-    public void testSimpleNHJ() {
+    @Category(SystemTests.class)
+    public void testSimpleSHJ() {
         try(Transaction transaction = d.beginTransaction()) {
             Schema schema = TestUtils.createSchemaWithAllTypes();
 
@@ -77,9 +77,9 @@ public class TestGraceHashJoin {
                 expectedOutput.add(joinRecords(r, r));
             }
 
-            NaiveHashJoin nhj = new NaiveHashJoin(leftIter, rightIter, 1, 1, transaction.getTransactionContext(), schema);
+            SimpleHashJoin shj = new SimpleHashJoin(leftIter, rightIter, 1, 1, transaction.getTransactionContext(), schema);
 
-            List<Record> output = nhj.run();
+            List<Record> output = shj.run();
 
             assertEquals(5, output.size());
             assertEquals(expectedOutput, output);
@@ -87,7 +87,7 @@ public class TestGraceHashJoin {
     }
 
     /**
-     * Sanity test on a simple set of inputs. GHJ should behave similarly to NHJ for this one.
+     * Sanity test on a simple set of inputs. GHJ should behave similarly to SHJ for this one.
      */
     @Test
     @Category(PublicTests.class)
@@ -179,15 +179,15 @@ public class TestGraceHashJoin {
     }
 
     /**
-     * Tests student's input and checks whether NHJ fails but GHJ passes.
+     * Tests student's input and checks whether SHJ fails but GHJ passes.
      */
     @Test
     @Category(PublicTests.class)
-    public void testBreakNHJButPassGHJ() {
+    public void testBreakSHJButPassGHJ() {
         try(Transaction transaction = d.beginTransaction()) {
             Schema schema = TestUtils.createSchemaOfInt();
 
-            Pair<List<Record>, List<Record>> inputs = GraceHashJoin.getBreakNHJInputs();
+            Pair<List<Record>, List<Record>> inputs = GraceHashJoin.getBreakSHJInputs();
 
             List<Record> leftRecords = inputs.getFirst();
             Iterator<Record> leftIter = leftRecords.iterator();
@@ -195,13 +195,13 @@ public class TestGraceHashJoin {
             Record[] rightRecords = inputs.getSecond().toArray(new Record[inputs.getSecond().size()]);
             BacktrackingIterator<Record> rightIter = new ArrayBacktrackingIterator<>(rightRecords);
 
-            NaiveHashJoin nhj = new NaiveHashJoin(leftIter, rightIter, 0, 0, transaction.getTransactionContext(), schema);
+            SimpleHashJoin shj = new SimpleHashJoin(leftIter, rightIter, 0, 0, transaction.getTransactionContext(), schema);
 
             try {
-                nhj.run();
-                fail("Naive Hash Join did not fail!");
+                shj.run();
+                fail("Simple Hash Join did not fail!");
             } catch (Exception e) {
-                assertEquals("Naive Hash failed for the wrong reason!",
+                assertEquals("Simple Hash failed for the wrong reason!",
                         "The records in this partition cannot fit in B-2 pages of memory.", e.getMessage());
             }
 

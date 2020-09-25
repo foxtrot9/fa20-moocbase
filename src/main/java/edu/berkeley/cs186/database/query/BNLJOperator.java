@@ -65,10 +65,10 @@ class BNLJOperator extends JoinOperator {
         private BNLJIterator() {
             super();
 
-            this.leftIterator = BNLJOperator.this.getPageIterator(this.getLeftTableName());
+            this.leftIterator = this.getLeftPageIterator();
             fetchNextLeftBlock();
 
-            this.rightIterator = BNLJOperator.this.getPageIterator(this.getRightTableName());
+            this.rightIterator = this.getRightPageIterator();
             this.rightIterator.markNext();
             fetchNextRightPage();
 

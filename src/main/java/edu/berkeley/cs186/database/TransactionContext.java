@@ -127,7 +127,7 @@ public interface TransactionContext extends AutoCloseable {
 
     BacktrackingIterator<Page> getPageIterator(String tableName);
 
-    BacktrackingIterator<Record> getBlockIterator(String tableName, Iterator<Page> block, int maxPages);
+    BacktrackingIterator<Record> getBlockIterator(String tableName, Iterator<Page> pageIter, int maxPages);
 
     boolean contains(String tableName, String columnName, DataBox key);
 

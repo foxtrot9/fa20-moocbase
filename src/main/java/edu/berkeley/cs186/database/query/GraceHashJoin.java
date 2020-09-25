@@ -60,7 +60,7 @@ public class GraceHashJoin {
         int columnIndex = left ? getLeftColumnIndex() : getRightColumnIndex();
 
         // TODO(proj3_part1): implement the partitioning logic
-        // You may find the implementation in NaiveHashJoin.java to be a good
+        // You may find the implementation in SimpleHashJoin.java to be a good
         // starting point. Make sure to use the hash function we provide to you
         // by calling hashFunc.apply(databox) to get an integer valued hash code
         // from a DataBox object.
@@ -115,7 +115,7 @@ public class GraceHashJoin {
 
         // You shouldn't refer to any variable starting with "left" or "right" here
         // Use the "build" and "probe" variables we set up for you
-        // Check out how NaiveHashJoin implements this function if you feel stuck.
+        // Check out how SimpleHashJoin implements this function if you feel stuck.
 
         // Return the records
         return joinedRecords;
@@ -257,9 +257,9 @@ public class GraceHashJoin {
     // Student Input Methods ///////////////////////////////////////////////////
 
     /**
-     * This method is called in testBreakNHJButPassGHJ.
+     * This method is called in testBreakSHJButPassGHJ.
      *
-     * Come up with two lists of records for leftRecords and rightRecords such that NHJ will error when given
+     * Come up with two lists of records for leftRecords and rightRecords such that SHJ will error when given
      * those relations, but GHJ will successfully run.
      *
      * createRecord() takes in a value and returns a record with that value.
@@ -272,11 +272,11 @@ public class GraceHashJoin {
      *
      * @return Pair of leftRecords and rightRecords
      */
-    public static Pair<List<Record>, List<Record>> getBreakNHJInputs() {
+    public static Pair<List<Record>, List<Record>> getBreakSHJInputs() {
         ArrayList<Record> leftRecords = new ArrayList<>();
         ArrayList<Record> rightRecords = new ArrayList<>();
 
-        // TODO(proj3_part1): populate leftRecords and rightRecords such that NHJ breaks but not GHJ
+        // TODO(proj3_part1): populate leftRecords and rightRecords such that SHJ breaks but not GHJ
 
         return new Pair<>(leftRecords, rightRecords);
     }

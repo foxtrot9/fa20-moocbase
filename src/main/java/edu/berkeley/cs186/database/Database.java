@@ -942,9 +942,9 @@ public class Database implements AutoCloseable {
         }
 
         @Override
-        public BacktrackingIterator<Record> getBlockIterator(String tableName, Iterator<Page> block,
+        public BacktrackingIterator<Record> getBlockIterator(String tableName, Iterator<Page> pageIter,
                 int maxPages) {
-            return getTable(tableName).blockIterator(block, maxPages);
+            return getTable(tableName).blockIterator(pageIter, maxPages);
         }
 
         @Override

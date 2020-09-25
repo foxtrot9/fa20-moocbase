@@ -8,19 +8,19 @@ import edu.berkeley.cs186.database.databox.DataBox;
 import edu.berkeley.cs186.database.table.Record;
 import edu.berkeley.cs186.database.table.Schema;
 
-public class NaiveHashPartition {
+public class SimpleHashPartition {
     private String tempTableName;
     private TransactionContext transaction;
 
     /**
-     * A class representing a partition used in naive hashing operations. This
+     * A class representing a partition used in simple hashing operations. This
      * partition can only hold records from a single relation, as opposed to
      * HashPartition which can hold records from two different relations.
      *
      * @param transaction the transaction context this buffer will be used in
      * @param schema the schema for the type of records to be added to this partition
      */
-    public NaiveHashPartition(TransactionContext transaction, Schema schema) {
+    public SimpleHashPartition(TransactionContext transaction, Schema schema) {
         this.tempTableName = transaction.createTempTable(schema); // Partitions are backed as a tempTable
         this.transaction = transaction;
     }

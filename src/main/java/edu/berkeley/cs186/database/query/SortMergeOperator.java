@@ -58,6 +58,8 @@ class SortMergeOperator extends JoinOperator {
         private SortMergeIterator() {
             super();
             // TODO(proj3_part1): implement
+            // Hint: you may find the helper methods getTransaction() and getRecordIterator(tableName)
+            // in JoinOperator useful here.
         }
 
         /**

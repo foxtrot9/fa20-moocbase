@@ -23,12 +23,20 @@ abstract class JoinOperator extends QueryOperator {
     }
 
     JoinType joinType;
+
+    // the source operators
     private QueryOperator leftSource;
     private QueryOperator rightSource;
+
+    // join column indices
     private int leftColumnIndex;
     private int rightColumnIndex;
+
+    // join column names
     private String leftColumnName;
     private String rightColumnName;
+
+    // current transaction
     private TransactionContext transaction;
 
     /**
@@ -57,54 +65,45 @@ abstract class JoinOperator extends QueryOperator {
     }
 
     @Override
-    public boolean isJoin() {
-        return true;
-    }
-
-    @Override
-    public abstract Iterator<Record> iterator();
-
-    @Override
     public QueryOperator getSource() {
         throw new QueryPlanException("There is no single source for join operators. Please use " +
                                      "getRightSource and getLeftSource and the corresponding set methods.");
     }
 
-    QueryOperator getLeftSource() {
-        return this.leftSource;
-    }
-
-    QueryOperator getRightSource() {
-        return this.rightSource;
-    }
-
     @Override
     public Schema computeSchema() {
+        // Get lists of the field names of the records
         Schema leftSchema = this.leftSource.getOutputSchema();
         Schema rightSchema = this.rightSource.getOutputSchema();
         List<String> leftSchemaNames = new ArrayList<>(leftSchema.getFieldNames());
         List<String> rightSchemaNames = new ArrayList<>(rightSchema.getFieldNames());
+
+        // Set up join column attributes
         this.leftColumnName = this.checkSchemaForColumn(leftSchema, this.leftColumnName);
         this.leftColumnIndex = leftSchemaNames.indexOf(leftColumnName);
         this.rightColumnName = this.checkSchemaForColumn(rightSchema, this.rightColumnName);
         this.rightColumnIndex = rightSchemaNames.indexOf(rightColumnName);
+
+        // Check that the types of the columns of each input operator match
         List<Type> leftSchemaTypes = new ArrayList<>(leftSchema.getFieldTypes());
         List<Type> rightSchemaTypes = new ArrayList<>(rightSchema.getFieldTypes());
         if (!leftSchemaTypes.get(this.leftColumnIndex).getClass().equals(rightSchemaTypes.get(
-                    this.rightColumnIndex).getClass())) {
+                this.rightColumnIndex).getClass())) {
             throw new QueryPlanException("Mismatched types of columns " + leftColumnName + " and "
-                                         + rightColumnName + ".");
+                    + rightColumnName + ".");
         }
         leftSchemaNames.addAll(rightSchemaNames);
         leftSchemaTypes.addAll(rightSchemaTypes);
+
+        // Return concatenated schema
         return new Schema(leftSchemaNames, leftSchemaTypes);
     }
 
     @Override
     public String str() {
-        return "type: " + this.getJoinType() + " (cost: " + this.getIOCost() + ")" +
-               "\nleftColumn: " + this.leftColumnName +
-               "\nrightColumn: " + this.rightColumnName;
+        return "type: " + this.joinType + " (cost: " + this.getIOCost() + ")" +
+                "\nleftColumn: " + this.leftColumnName +
+                "\nrightColumn: " + this.rightColumnName;
     }
 
     @Override
@@ -133,77 +132,81 @@ abstract class JoinOperator extends QueryOperator {
         TableStats rightStats = this.rightSource.getStats();
 
         return leftStats.copyWithJoin(this.leftColumnIndex,
-                                      rightStats,
-                                      this.rightColumnIndex);
+                rightStats,
+                this.rightColumnIndex);
     }
 
-    @Override
-    public abstract int estimateIOCost();
-
-    public Schema getSchema(String tableName) {
-        return this.transaction.getSchema(tableName);
+    /**
+     * @return the query operator which supplies the left records of the join
+     */
+    QueryOperator getLeftSource() {
+        return this.leftSource;
     }
 
-    public BacktrackingIterator<Page> getPageIterator(String tableName) {
-        return this.transaction.getPageIterator(tableName);
+    /**
+     * @return the query operator which supplies the right records of the join
+     */
+    QueryOperator getRightSource() {
+        return this.rightSource;
     }
 
-    public int getNumEntriesPerPage(String tableName) {
-        return this.transaction.getNumEntriesPerPage(tableName);
-    }
-
-    public int getEntrySize(String tableName) {
-        return this.transaction.getEntrySize(tableName);
-    }
-
+    /**
+     * @return the name of the column being joined on in the left relation
+     */
     public String getLeftColumnName() {
         return this.leftColumnName;
     }
 
+    /**
+     * @return the name of the column being joined on in the right relation
+     */
     public String getRightColumnName() {
         return this.rightColumnName;
     }
 
-    public TransactionContext getTransaction() {
-        return this.transaction;
-    }
+    // Helpers /////////////////////////////////////////////////////////////////
 
+    /**
+     * @return the position of the column being joined on in the left relation's schema. Can be used to determine which
+     * value in the left relation's records to check for equality on.
+     */
     public int getLeftColumnIndex() {
         return this.leftColumnIndex;
     }
 
+    /**
+     * @return the position of the column being joined on in the right relation's schema. Can be used to determine which
+     * value in the right relation's records to check for equality on.
+     */
     public int getRightColumnIndex() {
         return this.rightColumnIndex;
     }
 
-    public Record getRecord(String tableName, RecordId rid) {
-        return this.transaction.getRecord(tableName, rid);
+    /**
+     * @return the transaction context this operator is being executed within
+     */
+    public TransactionContext getTransaction() {
+        return this.transaction;
     }
 
+    /**
+     * @return a backtracking iterator over records in the table specified by `tableName`. This method will consume as
+     * many pages as it can from `pageIter` up to a maximum of `maxPages` pages, and return an iterator over the records
+     * on those pages.
+     */
+    public BacktrackingIterator<Record> getBlockIterator(String tableName, Iterator<Page> pageIter,
+            int maxPages) {
+        return this.transaction.getBlockIterator(tableName, pageIter, maxPages);
+    }
+
+    /**
+     * @return a backtracking iterator over the records of the table specified by `tableName`
+     */
     public BacktrackingIterator<Record> getRecordIterator(String tableName) {
         return this.transaction.getRecordIterator(tableName);
     }
 
-    public BacktrackingIterator<Record> getBlockIterator(String tableName, Iterator<Page> block,
-            int maxPages) {
-        return this.transaction.getBlockIterator(tableName, block, maxPages);
-    }
-
-    public BacktrackingIterator<Record> getTableIterator(String tableName) {
-        return this.transaction.getRecordIterator(tableName);
-    }
-
-    public String createTempTable(Schema schema) {
-        return this.transaction.createTempTable(schema);
-    }
-
-    public RecordId addRecord(String tableName, List<DataBox> values) {
-        return this.transaction.addRecord(tableName, values);
-    }
-
-    public JoinType getJoinType() {
-        return this.joinType;
-    }
+    // Iterator ////////////////////////////////////////////////////////////////
 
     /**
      * All iterators for subclasses of JoinOperator should subclass from
@@ -213,36 +216,56 @@ abstract class JoinOperator extends QueryOperator {
     protected abstract class JoinIterator implements Iterator<Record> {
         private String leftTableName;
         private String rightTableName;
+        private TransactionContext transaction;
 
         public JoinIterator() {
+            this.transaction = JoinOperator.this.transaction;
             if (JoinOperator.this.getLeftSource().isSequentialScan()) {
                 this.leftTableName = ((SequentialScanOperator) JoinOperator.this.getLeftSource()).getTableName();
             } else {
-                this.leftTableName = JoinOperator.this.createTempTable(
+                this.leftTableName = this.transaction.createTempTable(
                                          JoinOperator.this.getLeftSource().getOutputSchema());
                 Iterator<Record> leftIter = JoinOperator.this.getLeftSource().iterator();
                 while (leftIter.hasNext()) {
-                    JoinOperator.this.addRecord(this.leftTableName, leftIter.next().getValues());
+                    this.transaction.addRecord(this.leftTableName, leftIter.next().getValues());
                 }
             }
             if (JoinOperator.this.getRightSource().isSequentialScan()) {
                 this.rightTableName = ((SequentialScanOperator) JoinOperator.this.getRightSource()).getTableName();
             } else {
-                this.rightTableName = JoinOperator.this.createTempTable(
+                this.rightTableName = this.transaction.createTempTable(
                                           JoinOperator.this.getRightSource().getOutputSchema());
                 Iterator<Record> rightIter = JoinOperator.this.getRightSource().iterator();
                 while (rightIter.hasNext()) {
-                    JoinOperator.this.addRecord(this.rightTableName, rightIter.next().getValues());
+                    this.transaction.addRecord(this.rightTableName, rightIter.next().getValues());
                 }
             }
         }
 
+        /**
+         * @return the name of the table supplying left records to this join iterator
+         */
         protected String getLeftTableName() {
             return this.leftTableName;
         }
 
-        protected String getRightTableName() {
-            return this.rightTableName;
+        /**
+         * @return the name of the table supplying right records to this join iterator
+         */
+        protected String getRightTableName() { return this.rightTableName; }
+
+        /**
+         * @return an iterator over the pages of the table supplying left records to this join iterator
+         */
+        protected BacktrackingIterator<Page> getLeftPageIterator() {
+            return this.transaction.getPageIterator(this.leftTableName);
+        }
+
+        /**
+         * @return an iterator over the pages of the table supplying right records to this join iterator
+         */
+        protected BacktrackingIterator<Page> getRightPageIterator() {
+            return this.transaction.getPageIterator(this.rightTableName);
         }
     }
 }

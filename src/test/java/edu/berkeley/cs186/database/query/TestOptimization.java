@@ -24,7 +24,7 @@ import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
 @Category({Proj3Tests.class, Proj3Part2Tests.class})
-public class TestOptimization2 {
+public class TestOptimization {
     private static final String TABLENAME = "T";
 
     private static final String TestDir = "testDatabase";
@@ -79,7 +79,7 @@ public class TestOptimization2 {
 
     @Test
     @Category(PublicTests.class)
-    public void test() {
+    public void testOptimization() {
         try(Transaction transaction = this.db.beginTransaction()) {
             //creates a 100 records int 0 to 99
             for (int i = 0; i < 2000; ++i) {

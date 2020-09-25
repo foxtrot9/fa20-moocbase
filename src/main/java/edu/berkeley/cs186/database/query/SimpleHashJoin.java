@@ -3,13 +3,13 @@ package edu.berkeley.cs186.database.query;
 import edu.berkeley.cs186.database.TransactionContext;
 import edu.berkeley.cs186.database.common.iterator.BacktrackingIterator;
 import edu.berkeley.cs186.database.databox.DataBox;
-import edu.berkeley.cs186.database.memory.NaiveHashPartition;
+import edu.berkeley.cs186.database.memory.SimpleHashPartition;
 import edu.berkeley.cs186.database.table.Record;
 import edu.berkeley.cs186.database.table.Schema;
 
 import java.util.*;
 
-public class NaiveHashJoin {
+public class SimpleHashJoin {
     private Iterator<Record> leftRelationIterator;
     private BacktrackingIterator<Record> rightRelationIterator;
     private int numBuffers;
@@ -19,16 +19,14 @@ public class NaiveHashJoin {
     private Schema leftSchema;
 
     /**
-     * This class represents a naive hash join on two relations with records
-     * contained in leftRelationIterator and rightRelationIterator. To join the
-     * two relations the class will attempt to partition the left records
-     * and then probe with the right records. It will fail if any of the
-     * partitions are larger than the B-2 pages of memory needed to construct
-     * the in memory hash table by throwing an InvalidArgumentException.
+     * This class represents a simple hash join on two relations with records contained in leftRelationIterator and
+     * rightRelationIterator. To join the two relations the class will attempt a single partitioning phase of the left
+     * records and then probe with the right records. It will fail if any of the partitions are larger than the B-2 pages
+     * of memory needed to construct the in memory hash table by throwing an IllegalArgumentException.
      */
-    public NaiveHashJoin(Iterator<Record> leftRelationIterator,
-            BacktrackingIterator<Record> rightRelationIterator, int leftColumnIndex, int rightColumnIndex,
-            TransactionContext transactionContext, Schema leftSchema) {
+    public SimpleHashJoin(Iterator<Record> leftRelationIterator,
+                          BacktrackingIterator<Record> rightRelationIterator, int leftColumnIndex, int rightColumnIndex,
+                          TransactionContext transactionContext, Schema leftSchema) {
         this.leftRelationIterator = leftRelationIterator;
         this.rightRelationIterator = rightRelationIterator;
         this.numBuffers = transactionContext.getWorkMemSize();
@@ -47,7 +45,7 @@ public class NaiveHashJoin {
      * Partition stage. For every record in the left record iterator, hashes the
      * value we are joining on and adds that record to the correct partition.
      */
-    private void partition(NaiveHashPartition[] partitions, Iterator<Record> leftRecords) {
+    private void partition(SimpleHashPartition[] partitions, Iterator<Record> leftRecords) {
         while (leftRecords.hasNext()) {
             // Partition left records on the chosen column
             Record record = leftRecords.next();
@@ -68,7 +66,7 @@ public class NaiveHashJoin {
      * @param partition a partition
      * @param rightRecords An iterator of records from the right relation
      */
-    private List<Record> buildAndProbe(NaiveHashPartition partition, Iterator<Record> rightRecords) {
+    private List<Record> buildAndProbe(SimpleHashPartition partition, Iterator<Record> rightRecords) {
         if (partition.getNumPages() > this.numBuffers - 2) {
             throw new IllegalArgumentException(
                 "The records in this partition cannot fit in B-2 pages of memory."
@@ -112,15 +110,15 @@ public class NaiveHashJoin {
     /**
      * Runs the Hash Join algorithm! First, run the partitioning stage to create an
      * array of Hash Partitions Then, build and probe with each hash partitions
-     * records Finally, return our list of joined records.
+     * records. Finally, return our list of joined records.
      *
      * @return A list of joined records
      */
     public List<Record> run() {
         ArrayList<Record> joinedRecords = new ArrayList<Record>();
-        NaiveHashPartition partitions[] = createPartitions();
+        SimpleHashPartition partitions[] = createPartitions();
         this.partition(partitions, this.leftRelationIterator);
-        for (NaiveHashPartition partition : partitions) {
+        for (SimpleHashPartition partition : partitions) {
             joinedRecords.addAll(buildAndProbe(partition, this.rightRelationIterator));
             this.rightRelationIterator.reset(); // We need to reset this every time!
         }
@@ -128,13 +126,13 @@ public class NaiveHashJoin {
     }
 
     /**
-     * Create an appropriate number of NaiveHashPartitions and return them
+     * Create an appropriate number of SimpleHashPartitions and return them
      * as an array.
-     * @return an array of NaiveHashPartitions
+     * @return an array of SimpleHashPartitions
      */
-    private NaiveHashPartition[] createPartitions() {
+    private SimpleHashPartition[] createPartitions() {
         int usableBuffers = this.numBuffers - 1;
-        NaiveHashPartition partitions[] = new NaiveHashPartition[usableBuffers];
+        SimpleHashPartition partitions[] = new SimpleHashPartition[usableBuffers];
         for (int i = 0; i < usableBuffers; i++)
             partitions[i] = createPartition();
         return partitions;
@@ -161,8 +159,8 @@ public class NaiveHashJoin {
      *
      * @return a new hash partition
      */
-    private NaiveHashPartition createPartition() {
-        return new NaiveHashPartition(transactionContext, this.leftSchema);
+    private SimpleHashPartition createPartition() {
+        return new SimpleHashPartition(transactionContext, this.leftSchema);
     }
 
     /**
