@@ -135,20 +135,28 @@ public class TestJoinOperator {
     @Test
     @Category(PublicTests.class)
     public void testSimpleJoinPNLJ() {
+        // Simulates joining two tables, each containing 100 identical records,
+        // joined on the column "int". Since all records are identical we expect
+        // expect exactly 100 x 100 = 10000 records to be yielded.
+        // Both tables consist of a single page.
         try(Transaction transaction = d.beginTransaction()) {
             setSourceOperators(
-                new TestSourceOperator(),
-                new TestSourceOperator(),
-                transaction
+                    new TestSourceOperator(),
+                    new TestSourceOperator(),
+                    transaction
             );
 
             startCountIOs();
 
+            // Constructing the the operator should incur no extra IOs
             JoinOperator joinOperator = new PNLJOperator(leftSourceOperator, rightSourceOperator, "int", "int",
                     transaction.getTransactionContext());
             checkIOs(0);
 
             Iterator<Record> outputIterator = joinOperator.iterator();
+            // Creating the iterator should incur 2 IOs, one for the first page
+            // of the left relation and one for the first page of the right
+            // relation.
             checkIOs(2);
 
             int numRecords = 0;
@@ -167,6 +175,8 @@ public class TestJoinOperator {
                 assertEquals("mismatch at record " + numRecords, expectedRecord, outputIterator.next());
                 numRecords++;
             }
+            // Since the tables consisted of 1 page each we expect no additional
+            // IOs to be incurred.
             checkIOs(0);
 
             assertFalse("too many records", outputIterator.hasNext());
@@ -177,12 +187,14 @@ public class TestJoinOperator {
     @Test
     @Category(PublicTests.class)
     public void testSimpleJoinBNLJ() {
+        // This test is identical to the above test, but uses your BNLJ
+        // with B=5 instead.
         d.setWorkMem(5); // B=5
         try(Transaction transaction = d.beginTransaction()) {
             setSourceOperators(
-                new TestSourceOperator(),
-                new TestSourceOperator(),
-                transaction
+                    new TestSourceOperator(),
+                    new TestSourceOperator(),
+                    transaction
             );
 
             startCountIOs();
@@ -220,7 +232,27 @@ public class TestJoinOperator {
     @Test
     @Category(PublicTests.class)
     public void testSimplePNLJOutputOrder() {
+        // Constructs two tables both the schema (BOOL, INT, STRING(1), FLOAT).
+        // We only use copies of two different records here:
+        // Type 1: (true, 1, "1", 1.0)
+        // Type 2: (true, 2, "2", 2.0)
+        //
+        // We join together two tables consisting of:
+        // Left Table Page 1:  200 copies of Type 1, 200 copies of Type 2
+        // Left Table Page 2:  200 copies of Type 2, 200 copies of Type 1
+        // Right Table Page 1: 200 copies of Type 1, 200 copies of Type 2
+        // Right Table Page 2: 200 copies of Type 1, 200 copies of Type 2
+        // (Each page holds exactly 400 records)
+        //   +-----------+
+        // 1 | x   | x   |
+        // 2 |   x |   x |
+        // --+-----+-----+
+        // 2 |   x |   x |
+        // 1 | x   | x   |
+        //   +-----+-----+
+        //    1 2 | 1 2
         try(Transaction transaction = d.beginTransaction()) {
+            // This whole section is just to generate the tables described above
             Record r1 = TestUtils.createRecordWithAllTypesWithValue(1);
             List<DataBox> r1Vals = r1.getValues();
             Record r2 = TestUtils.createRecordWithAllTypesWithValue(2);
@@ -260,12 +292,13 @@ public class TestJoinOperator {
             }
 
             setSourceOperators(
-                new SequentialScanOperator(transaction.getTransactionContext(), "leftTable"),
-                new SequentialScanOperator(transaction.getTransactionContext(), "rightTable")
+                    new SequentialScanOperator(transaction.getTransactionContext(), "leftTable"),
+                    new SequentialScanOperator(transaction.getTransactionContext(), "rightTable")
             );
 
             startCountIOs();
 
+            // Constructing the operator should incur 0 IOs
             QueryOperator joinOperator = new PNLJOperator(leftSourceOperator, rightSourceOperator, "int", "int",
                     transaction.getTransactionContext());
             checkIOs(0);
@@ -273,7 +306,12 @@ public class TestJoinOperator {
             int count = 0;
             Iterator<Record> outputIterator = joinOperator.iterator();
             checkIOs(2);
+            // Creating the iterator should incur 2 IOs, one for the first page
+            // of the left table and one for the first page of the right table
 
+            // You may find it useful to try to visualize the layouts of the
+            // right and left tables to determine why we expect each record
+            // type where we do.
             while (outputIterator.hasNext() && count < 400 * 400 * 2) {
                 if (count < 200 * 200) {
                     assertEquals("mismatch at record " + count, expectedRecord1, outputIterator.next());
@@ -294,14 +332,28 @@ public class TestJoinOperator {
                 }
                 count++;
 
-                if (count == 200 * 200 * 2 || count == 200 * 200 * 6) {
+                if (count == 200 * 200 * 2) {
+                    // Yielding this record should have incurred incurred 1 IO to
+                    // load in the second right page.
+                    checkIOs("at record " + count, 1);
+                    evictPage(4, 1);
+                }
+                if (count == 200 * 200 * 6) {
+                    // Yielding this record should have incurred incurred 1 IO to
+                    // load in the second right page.
                     checkIOs("at record " + count, 1);
                     evictPage(4, 1);
                 } else if (count == 200 * 200 * 4) {
+                    // Yielding this record should have incurred 2 IOs, one
+                    // to load in the second page of the left table, and to load
+                    // in the second page of the right table
                     checkIOs("at record " + count, 2);
                     evictPage(4, 2);
                     evictPage(3, 1);
                 } else {
+                    // Yielding this record should have incurred 0 IOs. If you
+                    // fail the assert here you may be either skipping records
+                    // or loading in a new page too early.
                     checkIOs("at record " + count, 0);
                 }
             }
@@ -450,8 +502,32 @@ public class TestJoinOperator {
     @Test
     @Category(PublicTests.class)
     public void testBNLJDiffOutPutThanPNLJ() {
+        // Constructs two tables both the schema (BOOL, INT, STRING(1), FLOAT).
+        // We only use copies of four different records here:
+        // Type 1: (true, 1, "1", 1.0)
+        // Type 2: (true, 2, "2", 2.0)
+        // Type 4: (true, 3, "3", 3.0)
+        // Type 5: (true, 4, "4", 4.0)
+        //
+        // We join together two tables consisting of:
+        // Left Table Page 1:  200 copies of Type 1, 200 copies of Type 2
+        // Left Table Page 2:  200 copies of Type 3, 200 copies of Type 4
+        // Right Table Page 1: 200 copies of Type 3, 200 copies of Type 4
+        // Right Table Page 2: 200 copies of Type 1, 200 copies of Type 2
+        // (Each page holds exactly 400 records)
+        //   +-----------+
+        // 4 |   x |     |
+        // 3 | x   |     |
+        // --+-----+-----+
+        // 2 |     |   x |
+        // 1 |     | x   |
+        //   +-----+-----+
+        //    3 4 | 1 2
+        // Note that the left (vertical) relation will be processed in blocks
+        // (B=4)
         d.setWorkMem(4); // B=4
         try(Transaction transaction = d.beginTransaction()) {
+            // This whole section is just to generate the tables described above
             Record r1 = TestUtils.createRecordWithAllTypesWithValue(1);
             List<DataBox> r1Vals = r1.getValues();
             Record r2 = TestUtils.createRecordWithAllTypesWithValue(2);
@@ -494,18 +570,21 @@ public class TestJoinOperator {
             }
 
             setSourceOperators(
-                new SequentialScanOperator(transaction.getTransactionContext(), "leftTable"),
-                new SequentialScanOperator(transaction.getTransactionContext(), "rightTable")
+                    new SequentialScanOperator(transaction.getTransactionContext(), "leftTable"),
+                    new SequentialScanOperator(transaction.getTransactionContext(), "rightTable")
             );
 
             startCountIOs();
 
+            // Constructing the operator should incur 0 IOs
             QueryOperator joinOperator = new BNLJOperator(leftSourceOperator, rightSourceOperator, "int", "int",
                     transaction.getTransactionContext());
             checkIOs(0);
 
             Iterator<Record> outputIterator = joinOperator.iterator();
             checkIOs(3);
+            // Creating the iterator should incur 3 IOs, one for the first right
+            // page and two for the first left block.
 
             int count = 0;
             while (outputIterator.hasNext() && count < 4 * 200 * 200) {
@@ -523,8 +602,13 @@ public class TestJoinOperator {
                 count++;
 
                 if (count == 200 * 200 * 2) {
+                    // Yielding this record should have incurred 1 IO to read in
+                    // the second right page.
                     checkIOs("at record " + count, 1);
                 } else {
+                    // Yielding this record should have incurred 0 IOs. If you
+                    // fail the assert here you may be either skipping records
+                    // or loading in a new page too early.
                     checkIOs("at record " + count, 0);
                 }
             }
