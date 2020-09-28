@@ -345,8 +345,8 @@ public class TestJoinOperator {
                     evictPage(4, 1);
                 } else if (count == 200 * 200 * 4) {
                     // Yielding this record should have incurred 2 IOs, one
-                    // to load in the second page of the left table, and to load
-                    // in the first page of the right table
+                    // to load in the second page of the left table, and one to
+                    // load in the first page of the right table
                     checkIOs("at record " + count, 2);
                     evictPage(4, 2);
                     evictPage(3, 1);
