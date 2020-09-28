@@ -250,7 +250,7 @@ public class TestJoinOperator {
         // 2 |   x |   x |
         // 1 | x   | x   |
         //   +-----+-----+
-        //    1 2 | 1 2
+        //     1 2 | 1 2
         try(Transaction transaction = d.beginTransaction()) {
             // This whole section is just to generate the tables described above
             Record r1 = TestUtils.createRecordWithAllTypesWithValue(1);
@@ -522,7 +522,7 @@ public class TestJoinOperator {
         // 2 |     |   x |
         // 1 |     | x   |
         //   +-----+-----+
-        //    3 4 | 1 2
+        //     3 4 | 1 2
         // Note that the left (vertical) relation will be processed in blocks
         // (B=4)
         d.setWorkMem(4); // B=4
