@@ -111,8 +111,8 @@ public class ExtraNLJTests {
             List<Record> leftRecords = new ArrayList<>();
             List<Record> rightRecords = new ArrayList<>();
             for (int i = 0; i < 4; i++) {
-                Record leftRecord = getStringIntIntIntRecord("left", 1, i, 0, 5);
-                Record rightRecord = getStringIntIntIntRecord("right", 1, i, 0, 5);
+                Record leftRecord = getStringIntIntIntRecord("left", 1, i+1, 0, 5);
+                Record rightRecord = getStringIntIntIntRecord("right", 1, i+1, 0, 5);
                 leftRecords.add(leftRecord);
                 rightRecords.add(rightRecord);
                 transaction.getTransactionContext().addRecord("leftTable", leftRecord.getValues());
@@ -215,8 +215,8 @@ public class ExtraNLJTests {
             for (int i = 0; i < 4; i++) {
                 int jValue = 1;
                 if (i >= 2) jValue = 2;
-                Record leftRecord = getStringIntIntIntRecord("left", 1, i, jValue, 5);
-                Record rightRecord = getStringIntIntIntRecord("right", 1, i, jValue, 5);
+                Record leftRecord = getStringIntIntIntRecord("left", 1, i+1, jValue, 5);
+                Record rightRecord = getStringIntIntIntRecord("right", 1, i+1, jValue, 5);
                 leftRecords.add(leftRecord);
                 rightRecords.add(rightRecord);
                 transaction.getTransactionContext().addRecord("leftTable", leftRecord.getValues());
@@ -320,8 +320,8 @@ public class ExtraNLJTests {
             for (int i = 0; i < 4; i++) {
                 int jValue = 1;
                 if (i >= 2) jValue = 2;
-                Record leftRecord = getStringIntIntIntRecord("left", 1, i, jValue, 5);
-                Record rightRecord = getStringIntIntIntRecord("right", 1, i, 3-jValue, 5);
+                Record leftRecord = getStringIntIntIntRecord("left", 1, i+1, jValue, 5);
+                Record rightRecord = getStringIntIntIntRecord("right", 1, i+1, 3-jValue, 5);
                 leftRecords.add(leftRecord);
                 rightRecords.add(rightRecord);
                 transaction.getTransactionContext().addRecord("leftTable", leftRecord.getValues());
@@ -440,8 +440,8 @@ public class ExtraNLJTests {
                         rightSpacers.add(transaction.getTransactionContext().addRecord("rightTable", rightSpacer.getValues()));
                     }
                 }
-                Record leftRecord = getStringIntIntIntRecord("left", page, rNum, jValue, stringSize);
-                Record rightRecord = getStringIntIntIntRecord("right", page, rNum, jValue, stringSize);
+                Record leftRecord = getStringIntIntIntRecord("left", page, rNum+1, jValue, stringSize);
+                Record rightRecord = getStringIntIntIntRecord("right", page, rNum+1, jValue, stringSize);
                 transaction.getTransactionContext().addRecord("leftTable", leftRecord.getValues());
                 transaction.getTransactionContext().addRecord("rightTable", rightRecord.getValues());
                 leftRecords.add(leftRecord);
@@ -568,8 +568,8 @@ public class ExtraNLJTests {
                         rightSpacers.add(transaction.getTransactionContext().addRecord("rightTable", rightSpacer.getValues()));
                     }
                 }
-                Record leftRecord = getStringIntIntIntRecord("left", page, rNum, jValue, stringSize);
-                Record rightRecord = getStringIntIntIntRecord("right", page, rNum, jValue, stringSize);
+                Record leftRecord = getStringIntIntIntRecord("left", page, rNum+1, jValue, stringSize);
+                Record rightRecord = getStringIntIntIntRecord("right", page, rNum+1, jValue, stringSize);
                 transaction.getTransactionContext().addRecord("leftTable", leftRecord.getValues());
                 transaction.getTransactionContext().addRecord("rightTable", rightRecord.getValues());
                 leftRecords.add(leftRecord);
@@ -707,8 +707,8 @@ public class ExtraNLJTests {
                         rightSpacers.add(transaction.getTransactionContext().addRecord("rightTable", rightSpacer.getValues()));
                     }
                 }
-                Record leftRecord = getStringIntIntIntRecord("left", page, rNum, jValue, stringSize);
-                Record rightRecord = getStringIntIntIntRecord("right", page, rNum, 3-jValue, stringSize);
+                Record leftRecord = getStringIntIntIntRecord("left", page, rNum+1, jValue, stringSize);
+                Record rightRecord = getStringIntIntIntRecord("right", page, rNum+1, 3-jValue, stringSize);
                 transaction.getTransactionContext().addRecord("leftTable", leftRecord.getValues());
                 transaction.getTransactionContext().addRecord("rightTable", rightRecord.getValues());
                 leftRecords.add(leftRecord);
@@ -851,8 +851,8 @@ public class ExtraNLJTests {
                         rightSpacers.add(transaction.getTransactionContext().addRecord("rightTable", rightSpacer.getValues()));
                     }
                 }
-                Record leftRecord = getStringIntIntIntRecord("left", page, rNum, jValue, stringSize);
-                Record rightRecord = getStringIntIntIntRecord("right", page, rNum, jValue, stringSize);
+                Record leftRecord = getStringIntIntIntRecord("left", page, rNum+1, jValue, stringSize);
+                Record rightRecord = getStringIntIntIntRecord("right", page, rNum+1, jValue, stringSize);
                 transaction.getTransactionContext().addRecord("leftTable", leftRecord.getValues());
                 transaction.getTransactionContext().addRecord("rightTable", rightRecord.getValues());
                 leftRecords.add(leftRecord);
@@ -993,8 +993,8 @@ public class ExtraNLJTests {
                         rightSpacers.add(transaction.getTransactionContext().addRecord("rightTable", rightSpacer.getValues()));
                     }
                 }
-                Record leftRecord = getStringIntIntIntRecord("left", page, rNum, jValue, stringSize);
-                Record rightRecord = getStringIntIntIntRecord("right", page, rNum, 3-jValue, stringSize);
+                Record leftRecord = getStringIntIntIntRecord("left", page, rNum+1, jValue, stringSize);
+                Record rightRecord = getStringIntIntIntRecord("right", page, rNum+1, 3-jValue, stringSize);
                 transaction.getTransactionContext().addRecord("leftTable", leftRecord.getValues());
                 transaction.getTransactionContext().addRecord("rightTable", rightRecord.getValues());
                 leftRecords.add(leftRecord);
@@ -1123,8 +1123,8 @@ public class ExtraNLJTests {
                         rightSpacers.add(transaction.getTransactionContext().addRecord("rightTable", rightSpacer.getValues()));
                     }
                 }
-                Record leftRecord = getStringIntIntIntRecord("left", page, rNum, jValue, stringSize);
-                Record rightRecord = getStringIntIntIntRecord("right", page, rNum, jValue, stringSize);
+                Record leftRecord = getStringIntIntIntRecord("left", page, rNum+1, jValue, stringSize);
+                Record rightRecord = getStringIntIntIntRecord("right", page, rNum+1, jValue, stringSize);
                 transaction.getTransactionContext().addRecord("leftTable", leftRecord.getValues());
                 transaction.getTransactionContext().addRecord("rightTable", rightRecord.getValues());
                 leftRecords.add(leftRecord);
@@ -1250,8 +1250,8 @@ public class ExtraNLJTests {
                         rightSpacers.add(transaction.getTransactionContext().addRecord("rightTable", rightSpacer.getValues()));
                     }
                 }
-                Record leftRecord = getStringIntIntIntRecord("left", page, rNum, jValue, stringSize);
-                Record rightRecord = getStringIntIntIntRecord("right", page, rNum, jValue, stringSize);
+                Record leftRecord = getStringIntIntIntRecord("left", page, rNum+1, jValue, stringSize);
+                Record rightRecord = getStringIntIntIntRecord("right", page, rNum+1, jValue, stringSize);
                 transaction.getTransactionContext().addRecord("leftTable", leftRecord.getValues());
                 transaction.getTransactionContext().addRecord("rightTable", rightRecord.getValues());
                 leftRecords.add(leftRecord);
@@ -1388,8 +1388,8 @@ public class ExtraNLJTests {
                         rightSpacers.add(transaction.getTransactionContext().addRecord("rightTable", rightSpacer.getValues()));
                     }
                 }
-                Record leftRecord = getStringIntIntIntRecord("left", page, rNum, jValue, stringSize);
-                Record rightRecord = getStringIntIntIntRecord("right", page, rNum, 3-jValue, stringSize);
+                Record leftRecord = getStringIntIntIntRecord("left", page, rNum+1, jValue, stringSize);
+                Record rightRecord = getStringIntIntIntRecord("right", page, rNum+1, 3-jValue, stringSize);
                 transaction.getTransactionContext().addRecord("leftTable", leftRecord.getValues());
                 transaction.getTransactionContext().addRecord("rightTable", rightRecord.getValues());
                 leftRecords.add(leftRecord);
@@ -1529,8 +1529,8 @@ public class ExtraNLJTests {
                         rightSpacers.add(transaction.getTransactionContext().addRecord("rightTable", rightSpacer.getValues()));
                     }
                 }
-                Record leftRecord = getStringIntIntIntRecord("left", page, rNum, jValue, stringSize);
-                Record rightRecord = getStringIntIntIntRecord("right", page, rNum, jValue, stringSize);
+                Record leftRecord = getStringIntIntIntRecord("left", page, rNum+1, jValue, stringSize);
+                Record rightRecord = getStringIntIntIntRecord("right", page, rNum+1, jValue, stringSize);
                 transaction.getTransactionContext().addRecord("leftTable", leftRecord.getValues());
                 transaction.getTransactionContext().addRecord("rightTable", rightRecord.getValues());
                 leftRecords.add(leftRecord);
@@ -1669,8 +1669,8 @@ public class ExtraNLJTests {
                         rightSpacers.add(transaction.getTransactionContext().addRecord("rightTable", rightSpacer.getValues()));
                     }
                 }
-                Record leftRecord = getStringIntIntIntRecord("left", page, rNum, jValue, stringSize);
-                Record rightRecord = getStringIntIntIntRecord("right", page, rNum, 3-jValue, stringSize);
+                Record leftRecord = getStringIntIntIntRecord("left", page, rNum+1, jValue, stringSize);
+                Record rightRecord = getStringIntIntIntRecord("right", page, rNum+1, 3-jValue, stringSize);
                 transaction.getTransactionContext().addRecord("leftTable", leftRecord.getValues());
                 transaction.getTransactionContext().addRecord("rightTable", rightRecord.getValues());
                 leftRecords.add(leftRecord);
@@ -1754,11 +1754,11 @@ public class ExtraNLJTests {
             List<String> rows = new ArrayList<>();
             for (int i = leftPages; i > 0; i--) {
                 rows.add(createSeparator());
-                for (int j = 3; j >= 0; j--) {
+                for (int j = 4; j >= 1; j--) {
                     String prefix;
-                    if (j == 3) prefix = " Left  ";
-                    else if (j == 2) prefix = " Page  ";
-                    else if (j == 1) prefix = " #"+(i)+"    ";
+                    if (j == 4) prefix = " Left  ";
+                    else if (j == 3) prefix = " Page  ";
+                    else if (j == 2) prefix = " #"+(i)+"    ";
                     else prefix = "       ";
                     prefix += leftRecords.get(getIndex(i, j)).getValues().get(3).getInt() + " ";
                     rows.add(createRow(prefix));
@@ -1908,7 +1908,7 @@ public class ExtraNLJTests {
         }
 
         private int getIndex(int pageNum, int recordNum) {
-            return (pageNum-1)*4 + recordNum;
+            return (pageNum-1)*4 + recordNum-1;
         }
 
         public String getProblems() {
