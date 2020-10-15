@@ -26,7 +26,7 @@ public class DummyLockManager extends LockManager {
 
     @Override
     public void acquireAndRelease(TransactionContext transaction, ResourceName name,
-                                  LockType lockType, List<ResourceName> releaseLocks)
+                                  LockType lockType, List<ResourceName> releaseNames)
     throws DuplicateLockRequestException, NoLockHeldException { }
 
     @Override

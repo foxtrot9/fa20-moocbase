@@ -204,7 +204,8 @@ public class Page {
          */
         @Override
         public Buffer get(byte[] dst, int offset, int length) {
-            // TODO(proj4_part3): locking code here
+            // TODO: proj4_part2: ensure an appropriate lock is acquired here
+            LockUtil.ensureSufficientLockHeld(lockContext, LockType.NL);
             Page.this.readBytes(this.offset + offset, length, dst);
             return this;
         }
@@ -219,7 +220,8 @@ public class Page {
          */
         @Override
         public Buffer put(byte[] src, int offset, int length) {
-            // TODO(proj4_part3): locking code here
+            // TODO(proj4_part2): Update the following line
+            LockUtil.ensureSufficientLockHeld(lockContext, LockType.NL);
             Page.this.writeBytes(this.offset + offset, length, src);
             return this;
         }

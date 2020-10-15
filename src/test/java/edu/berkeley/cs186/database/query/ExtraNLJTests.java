@@ -63,7 +63,7 @@ public class ExtraNLJTests {
     // 8 second max per method tested.
     @Rule
     public TestRule globalTimeout = new DisableOnDebug(Timeout.millis((long) (
-            3000 * TimeoutScaling.factor)));
+            12000 * TimeoutScaling.factor)));
 
     @Test
     public void test1x1PNLJFull() {

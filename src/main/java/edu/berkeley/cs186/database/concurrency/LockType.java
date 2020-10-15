@@ -70,6 +70,13 @@ public enum LockType {
         return false;
     }
 
+    /**
+     * @return True if this lock is IX, IS, or SIX. False otherwise.
+     */
+    public boolean isIntent() {
+        return this == LockType.IX || this == LockType.IS || this == LockType.SIX;
+    }
+
     @Override
     public String toString() {
         switch (this) {

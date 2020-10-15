@@ -7,7 +7,7 @@ public class LoggingLockContext extends LockContext {
 
     /**
      * A special LockContext that works with a LoggingLockManager to emit logs
-     * when the user uses disableChildLocks() or capacity()
+     * when the user uses disableChildLocks().
      */
     LoggingLockContext(LoggingLockManager lockman, LockContext parent, Pair<String, Long> name) {
         super(lockman, parent, name);
@@ -46,18 +46,6 @@ public class LoggingLockContext extends LockContext {
             child = temp;
         }
         return child;
-    }
-
-    /**
-     * Sets the capacity (number of children).
-     */
-    @Override
-    public synchronized void capacity(int capacity) {
-        int oldCapacity = super.capacity;
-        super.capacity(capacity);
-        if (oldCapacity != capacity) {
-            ((LoggingLockManager) lockman).emit("set-capacity " + name + " " + capacity);
-        }
     }
 
     public synchronized void allowDisableChildLocks(boolean allow) {

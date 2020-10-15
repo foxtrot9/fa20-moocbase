@@ -24,13 +24,13 @@ public class LoggingLockManager extends LockManager {
 
     @Override
     public void acquireAndRelease(TransactionContext transaction, ResourceName name,
-                                  LockType lockType, List<ResourceName> releaseLocks) {
+                                  LockType lockType, List<ResourceName> releaseNames) {
         StringBuilder estr = new StringBuilder("acquire-and-release ");
         estr.append(transaction.getTransNum()).append(' ').append(name).append(' ').append(lockType);
-        releaseLocks.sort(Comparator.comparing(ResourceName::toString));
+        releaseNames.sort(Comparator.comparing(ResourceName::toString));
         estr.append(" [");
         boolean first = true;
-        for (ResourceName n : releaseLocks) {
+        for (ResourceName n : releaseNames) {
             if (!first) {
                 estr.append(", ");
             }
@@ -46,7 +46,7 @@ public class LoggingLockManager extends LockManager {
             return !suppressInternal;
         });
         try {
-            super.acquireAndRelease(transaction, name, lockType, releaseLocks);
+            super.acquireAndRelease(transaction, name, lockType, releaseNames);
         } finally {
             loggingOverride.compute(Thread.currentThread().getId(), (id, old) -> oldOverride[0]);
         }

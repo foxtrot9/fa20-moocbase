@@ -118,7 +118,7 @@ public class Table implements BacktrackingIterable<Record> {
      * new table will be created if none exists on the heapfile.
      */
     public Table(String name, Schema schema, HeapFile heapFile, LockContext lockContext) {
-        // TODO(proj4_part3): table locking code
+        LockUtil.ensureSufficientLockHeld(lockContext, LockType.X);
 
         this.name = name;
         this.heapFile = heapFile;
@@ -311,9 +311,12 @@ public class Table implements BacktrackingIterable<Record> {
      * not correspond to an existing record in the table.
      */
     public synchronized Record updateRecord(List<DataBox> values, RecordId rid) {
-        // TODO(proj4_part3): modify for smarter locking
-
         validateRecordId(rid);
+        // If we're updating a record we'll need exclusive access to the page
+        // its on.
+        LockContext pageContext = lockContext.childContext(rid.getPageNum());
+        // TODO(proj4_part2): Update the following line
+        LockUtil.ensureSufficientLockHeld(pageContext, LockType.NL);
 
         Record newRecord = schema.verify(values);
         Record oldRecord = getRecord(rid);
@@ -336,9 +339,11 @@ public class Table implements BacktrackingIterable<Record> {
      * if rid does not correspond to an existing record in the table.
      */
     public synchronized Record deleteRecord(RecordId rid) {
-        // TODO(proj4_part3): modify for smarter locking
-
         validateRecordId(rid);
+        LockContext pageContext = lockContext.childContext(rid.getPageNum());
+
+        // TODO(proj4_part2): Update the following line
+        LockUtil.ensureSufficientLockHeld(pageContext, LockType.NL);
 
         Page page = fetchPage(rid.getPageNum());
         try {
@@ -427,28 +432,10 @@ public class Table implements BacktrackingIterable<Record> {
         }
     }
 
-    // Locking /////////////////////////////////////////////////////////////////
-
-    /**
-     * Enables auto-escalation. All future requests for pages of this table by transactions
-     * that hold locks on at least 20% of the locks on the table's pages when this table
-     * has at least 10 pages should escalate to a table-level lock before any locks are requested.
-     */
-    public void enableAutoEscalate() {
-        // TODO(proj4_part3): implement
-    }
-
-    /**
-     * Disables auto-escalation. No future requests for pages of this table should result in
-     * an automatic escalation to a table-level lock.
-     */
-    public void disableAutoEscalate() {
-        // TODO(proj4_part3): implement
-    }
-
     // Iterators ///////////////////////////////////////////////////////////////
     public BacktrackingIterator<RecordId> ridIterator() {
-        // TODO(proj4_part3): reduce locking overhead for table scans
+        // Doing a scan of the table requires read access
+        LockUtil.ensureSufficientLockHeld(lockContext, LockType.S);
 
         BacktrackingIterator<Page> iter = heapFile.iterator();
         return new ConcatBacktrackingIterator<>(new PageIterator(iter, false));

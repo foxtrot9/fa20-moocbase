@@ -86,22 +86,25 @@ public class BPlusTree {
      * All pages allocated on the given partition are serializations of inner and leaf nodes.
      */
     public BPlusTree(BufferManager bufferManager, BPlusTreeMetadata metadata, LockContext lockContext) {
-        // TODO(proj4_part3): B+ tree locking
+        // Prevent child locks - we only lock the entire tree as a whole.
+        lockContext.disableChildLocks();
+        // TODO(proj4_integration): Update the following line
+        LockUtil.ensureSufficientLockHeld(lockContext, LockType.NL);
 
         // Sanity checks.
         if (metadata.getOrder() < 0) {
             String msg = String.format(
-                             "You cannot construct a B+ tree with negative order %d.",
-                             metadata.getOrder());
+                    "You cannot construct a B+ tree with negative order %d.",
+                    metadata.getOrder());
             throw new BPlusTreeException(msg);
         }
 
         int maxOrder = BPlusTree.maxOrder(BufferManager.EFFECTIVE_PAGE_SIZE, metadata.getKeySchema());
         if (metadata.getOrder() > maxOrder) {
             String msg = String.format(
-                             "You cannot construct a B+ tree with order %d greater than the " +
-                             "max order %d.",
-                             metadata.getOrder(), maxOrder);
+                    "You cannot construct a B+ tree with order %d greater than the " +
+                            "max order %d.",
+                    metadata.getOrder(), maxOrder);
             throw new BPlusTreeException(msg);
         }
 
@@ -111,7 +114,7 @@ public class BPlusTree {
 
         if (this.metadata.getRootPageNum() != DiskSpaceManager.INVALID_PAGE_NUM) {
             this.updateRoot(BPlusNode.fromBytes(this.metadata, bufferManager, lockContext,
-                                                this.metadata.getRootPageNum()));
+                    this.metadata.getRootPageNum()));
         } else {
             // Construct the root.
             List<DataBox> keys = new ArrayList<>();
@@ -136,8 +139,10 @@ public class BPlusTree {
      */
     public Optional<RecordId> get(DataBox key) {
         typecheck(key);
+        // TODO(proj4_integration): Update the following line
+        LockUtil.ensureSufficientLockHeld(lockContext, LockType.NL);
+
         // TODO(proj2): implement
-        // TODO(proj4_part3): B+ tree locking
 
         return Optional.empty();
     }
@@ -151,7 +156,8 @@ public class BPlusTree {
      */
     public Iterator<RecordId> scanEqual(DataBox key) {
         typecheck(key);
-        // TODO(proj4_part3): B+ tree locking
+        // TODO(proj4_integration): Update the following line
+        LockUtil.ensureSufficientLockHeld(lockContext, LockType.NL);
 
         Optional<RecordId> rid = get(key);
         if (rid.isPresent()) {
@@ -189,8 +195,10 @@ public class BPlusTree {
      * memory will receive 0 points.
      */
     public Iterator<RecordId> scanAll() {
+        // TODO(proj4_integration): Update the following line
+        LockUtil.ensureSufficientLockHeld(lockContext, LockType.NL);
+
         // TODO(proj2): Return a BPlusTreeIterator.
-        // TODO(proj4_part3): B+ tree locking
 
         return Collections.emptyIterator();
     }
@@ -220,8 +228,10 @@ public class BPlusTree {
      */
     public Iterator<RecordId> scanGreaterEqual(DataBox key) {
         typecheck(key);
+        // TODO(proj4_integration): Update the following line
+        LockUtil.ensureSufficientLockHeld(lockContext, LockType.NL);
+
         // TODO(proj2): Return a BPlusTreeIterator.
-        // TODO(proj4_part3): B+ tree locking
 
         return Collections.emptyIterator();
     }
@@ -237,12 +247,13 @@ public class BPlusTree {
      */
     public void put(DataBox key, RecordId rid) {
         typecheck(key);
+        // TODO(proj4_integration): Update the following line
+        LockUtil.ensureSufficientLockHeld(lockContext, LockType.NL);
+
         // TODO(proj2): implement
         // Note: You should NOT update the root variable directly.
         // Use the provided updateRoot() helper method to change
         // the tree's root if the old root splits.
-
-        // TODO(proj4_part3): B+ tree locking
 
         return;
     }
@@ -265,12 +276,13 @@ public class BPlusTree {
      * bulkLoad (see comments in BPlusNode.bulkLoad).
      */
     public void bulkLoad(Iterator<Pair<DataBox, RecordId>> data, float fillFactor) {
+        // TODO(proj4_integration): Update the following line
+        LockUtil.ensureSufficientLockHeld(lockContext, LockType.NL);
+
         // TODO(proj2): implement
         // Note: You should NOT update the root variable directly.
         // Use the provided updateRoot() helper method to change
         // the tree's root if the old root splits.
-
-        // TODO(proj4_part3): B+ tree locking
 
         return;
     }
@@ -288,8 +300,10 @@ public class BPlusTree {
      */
     public void remove(DataBox key) {
         typecheck(key);
+        // TODO(proj4_integration): Update the following line
+        LockUtil.ensureSufficientLockHeld(lockContext, LockType.NL);
+
         // TODO(proj2): implement
-        // TODO(proj4_part3): B+ tree locking
 
         return;
     }
@@ -300,7 +314,8 @@ public class BPlusTree {
      * more information.
      */
     public String toSexp() {
-        // TODO(proj4_part3): B+ tree locking
+        // TODO(proj4_integration): Update the following line
+        LockUtil.ensureSufficientLockHeld(lockContext, LockType.NL);
         return root.toSexp();
     }
 
@@ -317,7 +332,9 @@ public class BPlusTree {
      * to create a PDF of the tree.
      */
     public String toDot() {
-        // TODO(proj4_part3): B+ tree locking
+        // TODO(proj4_integration): Update the following line
+        LockUtil.ensureSufficientLockHeld(lockContext, LockType.NL);
+
         List<String> strings = new ArrayList<>();
         strings.add("digraph g {" );
         strings.add("  node [shape=record, height=0.1];");

@@ -45,17 +45,8 @@ public class DummyLockContext extends LockContext {
     }
 
     @Override
-    public int capacity() {
+    public int getNumChildren(TransactionContext transaction) {
         return 0;
-    }
-
-    @Override
-    public void capacity(int capacity) {
-    }
-
-    @Override
-    public double saturation(TransactionContext transaction) {
-        return 0.0;
     }
 
     @Override

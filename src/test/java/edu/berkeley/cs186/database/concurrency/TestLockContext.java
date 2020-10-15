@@ -36,7 +36,14 @@ public class TestLockContext {
     @Before
     public void setUp() {
         lockManager = new LoggingLockManager();
-
+        /**
+         * For all of these tests we have the following resource hierarchy
+         *                     database
+         *                        |
+         *                      table1
+         *                        |
+         *                      page1
+         */
         dbLockContext = lockManager.databaseContext();
         tableLockContext = dbLockContext.childContext("table1", 1);
         pageLockContext = tableLockContext.childContext("page1", 1);
@@ -65,6 +72,7 @@ public class TestLockContext {
     public void testSimpleAcquirePass() {
         dbLockContext.acquire(transactions[0], LockType.IS);
         tableLockContext.acquire(transactions[0], LockType.S);
+        // both locks should have been acquired
         Assert.assertEquals(Arrays.asList(new Lock(dbLockContext.getResourceName(), LockType.IS, 0L),
                                           new Lock(tableLockContext.getResourceName(), LockType.S, 0L)),
                             lockManager.getLocks(transactions[0]));
@@ -76,7 +84,7 @@ public class TestLockContext {
         dbLockContext.acquire(transactions[0], LockType.IX);
         tableLockContext.acquire(transactions[0], LockType.IS);
         pageLockContext.acquire(transactions[0], LockType.S);
-
+        // all three locks should have been acquired
         Assert.assertEquals(Arrays.asList(new Lock(dbLockContext.getResourceName(), LockType.IX, 0L),
                                           new Lock(tableLockContext.getResourceName(), LockType.IS, 0L),
                                           new Lock(pageLockContext.getResourceName(), LockType.S, 0L)),
@@ -89,7 +97,7 @@ public class TestLockContext {
         dbLockContext.acquire(transactions[0], LockType.IS);
         tableLockContext.acquire(transactions[0], LockType.S);
         tableLockContext.release(transactions[0]);
-
+        // After the sequence above, T0 should only have its lock on the database
         Assert.assertEquals(Collections.singletonList(new Lock(dbLockContext.getResourceName(), LockType.IS,
                             0L)),
                             lockManager.getLocks(transactions[0]));
@@ -297,16 +305,14 @@ public class TestLockContext {
         LockContext r2 = dbLockContext.childContext("table2", 2);
         LockContext r3 = dbLockContext.childContext("table3", 3);
 
-        r0.capacity(4);
-
         r0.acquire(t1, LockType.IS);
         r1.acquire(t1, LockType.S);
         r2.acquire(t1, LockType.IS);
         r3.acquire(t1, LockType.S);
 
-        assertEquals(3.0 / 4, r0.saturation(t1), 1e-6);
+        assertEquals(3, r0.getNumChildren(t1));
         r0.escalate(t1);
-        assertEquals(0.0, r0.saturation(t1), 1e-6);
+        assertEquals(0, r0.getNumChildren(t1));
 
         assertTrue(TestLockManager.holds(lockManager, t1, r0.getResourceName(), LockType.S));
         assertFalse(TestLockManager.holds(lockManager, t1, r1.getResourceName(), LockType.S));
@@ -381,20 +387,19 @@ public class TestLockContext {
 
     @Test
     @Category(PublicTests.class)
-    public void testSaturation() {
+    public void testGetNumChildren() {
         LockContext tableContext = dbLockContext.childContext("table2", 2);
         TransactionContext t1 = transactions[1];
-        dbLockContext.capacity(10);
         dbLockContext.acquire(t1, LockType.IX);
         tableContext.acquire(t1, LockType.IS);
-        assertEquals(0.1, dbLockContext.saturation(t1), 1E-6);
+        assertEquals(1, dbLockContext.getNumChildren(t1));
         tableContext.promote(t1, LockType.IX);
-        assertEquals(0.1, dbLockContext.saturation(t1), 1E-6);
+        assertEquals(1, dbLockContext.getNumChildren(t1));
         tableContext.release(t1);
-        assertEquals(0.0, dbLockContext.saturation(t1), 1E-6);
+        assertEquals(0, dbLockContext.getNumChildren(t1));
         tableContext.acquire(t1, LockType.IS);
         dbLockContext.escalate(t1);
-        assertEquals(0.0, dbLockContext.saturation(t1), 1E-6);
+        assertEquals(0, dbLockContext.getNumChildren(t1));
     }
 
 }
