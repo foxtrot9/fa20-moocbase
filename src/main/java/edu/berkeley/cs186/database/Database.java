@@ -1129,7 +1129,12 @@ public class Database implements AutoCloseable {
             // TODO(proj4_part2)
             return;
             } catch (Exception e) {
+                // There's a chance an error message from your release phase
+                // logic can get suppressed. This guarantees that the stack
+                // trace at least shows up somewhere before suppression.
+                // https://stackoverflow.com/questions/7849416/what-is-a-suppressed-exception
                 e.printStackTrace();
+                throw e;
             }
         }
 
