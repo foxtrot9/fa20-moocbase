@@ -453,8 +453,19 @@ public class BufferManagerImpl implements BufferManager {
     public void freePage(Page page) {
         this.managerLock.lock();
         try {
+            TransactionContext transaction = TransactionContext.getTransaction();
             int frameIndex = this.pageToFrame.get(page.getPageNum());
+
             Frame frame = this.frames[frameIndex];
+            if (transaction != null) {
+                recoveryManager.logPageWrite(
+                        transaction.getTransNum(),
+                        page.getPageNum(),
+                        (short) 0,
+                        frame.contents,
+                        new byte[EFFECTIVE_PAGE_SIZE]
+                );
+            }
             this.pageToFrame.remove(page.getPageNum(), frameIndex);
             evictionPolicy.cleanup(frame);
             frame.setFree();

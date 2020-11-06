@@ -83,7 +83,7 @@ public class ARIESRecoveryManager implements RecoveryManager {
     public void setManagers(DiskSpaceManager diskSpaceManager, BufferManager bufferManager) {
         this.diskSpaceManager = diskSpaceManager;
         this.bufferManager = bufferManager;
-        this.logManager = new LogManagerImpl(bufferManager);
+        this.logManager = new LogManager(bufferManager);
     }
 
     // Forward Processing //////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ public class ARIESRecoveryManager implements RecoveryManager {
     /**
      * Called when a transaction is about to start committing.
      *
-     * A commit record should be emitted, the log should be flushed,
+     * A commit record should be appended, the log should be flushed,
      * and the transaction table and the transaction status should be updated.
      *
      * @param transNum transaction being committed
@@ -111,22 +111,23 @@ public class ARIESRecoveryManager implements RecoveryManager {
      */
     @Override
     public long commit(long transNum) {
-        // TODO(proj5): implement
+        // TODO(proj5_part1): implement
         return -1L;
     }
 
     /**
      * Called when a transaction is set to be aborted.
      *
-     * An abort record should be emitted, and the transaction table and transaction
-     * status should be updated. No CLRs should be emitted.
+     * An abort record should be appended, and the transaction table and
+     * transaction status should be updated. Calling this function should not
+     * perform any rollbacks.
      *
      * @param transNum transaction being aborted
      * @return LSN of the abort record
      */
     @Override
     public long abort(long transNum) {
-        // TODO(proj5): implement
+        // TODO(proj5_part1): implement
         return -1L;
     }
 
@@ -135,7 +136,7 @@ public class ARIESRecoveryManager implements RecoveryManager {
      * changes if the transaction is aborting.
      *
      * Any changes that need to be undone should be undone, the transaction should
-     * be removed from the transaction table, the end record should be emitted,
+     * be removed from the transaction table, the end record should be appended,
      * and the transaction status should be updated.
      *
      * @param transNum transaction to end
@@ -143,8 +144,37 @@ public class ARIESRecoveryManager implements RecoveryManager {
      */
     @Override
     public long end(long transNum) {
-        // TODO(proj5): implement
+        // TODO(proj5_part1): implement
         return -1L;
+    }
+
+    /**
+     * Recommended helper function: performs a rollback of all of a
+     * transaction's actions, up to (but not including) a certain LSN.
+     * The general idea is starting the LSN of the most recent record that hasn't
+     * been undone:
+     * - while the current LSN is greater than the LSN we're rolling back to
+     *    - if the record at the current LSN is undoable:
+     *       - Get a compensation log record (CLR) by calling undo on the record
+     *       - Flush if necessary
+     *       - Update the dirty page table if necessary
+     *       - Call redo on the CLR to perform the undo
+     *    - update the current LSN to that of the next record to undo
+     *
+     * Note above that calling .undo() on a record does not perform the undo, it
+     * just creates the record.
+     *
+     * @param transNum transaction to perform a rollback for
+     * @param LSN LSN to which we should rollback
+     */
+    private void rollbackToLSN(long transNum, long LSN) {
+        TransactionTableEntry transactionEntry = transactionTable.get(transNum);
+        LogRecord lastRecord = logManager.fetchLogRecord(transactionEntry.lastLSN);
+        long lastRecordLSN = lastRecord.getLSN();
+        // Small optimization: if the last record is a CLR we can start rolling
+        // back from the next record that hasn't yet been undone.
+        long currentLSN = lastRecord.getUndoNextLSN().orElse(lastRecordLSN);
+        // TODO(proj5_part1) implement the rollback logic described above
     }
 
     /**
@@ -179,7 +209,7 @@ public class ARIESRecoveryManager implements RecoveryManager {
      * This method is never called on a log page. Arguments to the before and after params
      * are guaranteed to be the same length.
      *
-     * The appropriate log record should be emitted; if the number of bytes written is
+     * The appropriate log record should be appended; if the number of bytes written is
      * too large (larger than BufferManager.EFFECTIVE_PAGE_SIZE / 2), then two records
      * should be written instead: an undo-only record followed by a redo-only record.
      *
@@ -197,7 +227,7 @@ public class ARIESRecoveryManager implements RecoveryManager {
                              byte[] after) {
         assert (before.length == after.length);
 
-        // TODO(proj5): implement
+        // TODO(proj5_part1): implement
         return -1L;
     }
 
@@ -207,7 +237,7 @@ public class ARIESRecoveryManager implements RecoveryManager {
      *
      * This method should return -1 if the partition is the log partition.
      *
-     * The appropriate log record should be emitted, and the log flushed.
+     * The appropriate log record should be appended, and the log flushed.
      * The transaction table should be updated accordingly.
      *
      * @param transNum transaction requesting the allocation
@@ -240,7 +270,7 @@ public class ARIESRecoveryManager implements RecoveryManager {
      *
      * This method should return -1 if the partition is the log partition.
      *
-     * The appropriate log record should be emitted, and the log flushed.
+     * The appropriate log record should be appended, and the log flushed.
      * The transaction table should be updated accordingly.
      *
      * @param transNum transaction requesting the partition be freed
@@ -273,7 +303,7 @@ public class ARIESRecoveryManager implements RecoveryManager {
      *
      * This method should return -1 if the page is in the log partition.
      *
-     * The appropriate log record should be emitted, and the log flushed.
+     * The appropriate log record should be appended, and the log flushed.
      * The transaction table should be updated accordingly.
      *
      * @param transNum transaction requesting the allocation
@@ -307,7 +337,7 @@ public class ARIESRecoveryManager implements RecoveryManager {
      *
      * This method should return -1 if the page is in the log partition.
      *
-     * The appropriate log record should be emitted, and the log flushed.
+     * The appropriate log record should be appended, and the log flushed.
      * The transaction table should be updated accordingly.
      *
      * @param transNum transaction requesting the page be freed
@@ -386,7 +416,7 @@ public class ARIESRecoveryManager implements RecoveryManager {
         // All of the transaction's changes strictly after the record at LSN should be undone.
         long LSN = transactionEntry.getSavepoint(name);
 
-        // TODO(proj5): implement
+        // TODO(proj5_part1): implement
         return;
     }
 
@@ -414,7 +444,7 @@ public class ARIESRecoveryManager implements RecoveryManager {
         Map<Long, List<Long>> touchedPages = new HashMap<>();
         int numTouchedPages = 0;
 
-        // TODO(proj5): generate end checkpoint record(s) for DPT and transaction table
+        // TODO(proj5_part1): generate end checkpoint record(s) for DPT and transaction table
 
         for (Map.Entry<Long, TransactionTableEntry> entry : transactionTable.entrySet()) {
             long transNum = entry.getKey();
@@ -453,8 +483,6 @@ public class ARIESRecoveryManager implements RecoveryManager {
         logManager.rewriteMasterRecord(masterRecord);
     }
 
-    // TODO(proj5): add any helper methods needed
-
     @Override
     public void close() {
         this.checkpoint();
@@ -464,13 +492,14 @@ public class ARIESRecoveryManager implements RecoveryManager {
     // Restart Recovery ////////////////////////////////////////////////////////
 
     /**
-     * Called whenever the database starts up, and performs restart recovery. Recovery is
-     * complete when the Runnable returned is run to termination. New transactions may be
-     * started once this method returns.
+     * Called whenever the database starts up, and performs restart recovery.
+     * Recovery is complete when the Runnable returned is run to termination.
+     * New transactions may be started once this method returns.
      *
-     * This should perform the three phases of recovery, and also clean the dirty page
-     * table of non-dirty pages (pages that aren't dirty in the buffer manager) between
-     * redo and undo, and perform a checkpoint after undo.
+     * This should perform the three phases of recovery, and also clean the
+     * dirty page table of non-dirty pages (pages that aren't dirty in the
+     * buffer manager) between redo and undo, and perform a checkpoint after
+     * undo.
      *
      * This method should return right before undo is performed.
      *
@@ -478,8 +507,14 @@ public class ARIESRecoveryManager implements RecoveryManager {
      */
     @Override
     public Runnable restart() {
-        // TODO(proj5): implement
-        return () -> {};
+        this.restartAnalysis();
+        this.restartRedo();
+        this.cleanDPT();
+
+        return () -> {
+            this.restartUndo();
+            this.checkpoint();
+        };
     }
 
     /**
@@ -490,7 +525,7 @@ public class ARIESRecoveryManager implements RecoveryManager {
      *
      * We then begin scanning log records, starting at the begin checkpoint record.
      *
-     * If the log record is for a transaction operation:
+     * If the log record is for a transaction operation (getTransNum is present)
      * - update the transaction table
      * - if it's page-related (as opposed to partition-related),
      *   - add to touchedPages
@@ -511,6 +546,10 @@ public class ARIESRecoveryManager implements RecoveryManager {
      *   add to transaction table if not already present.
      * - Add page numbers from checkpoint's touchedPages to the touchedPages sets in the
      *   transaction table if the transaction has not finished yet, and acquire X locks.
+     * - The status's in the transaction table should be updated if its possible
+     *   to transition from the status in the table to the status in the
+     *   checkpoint. For example, running -> complete is a possible transition,
+     *   but committing -> running is not.
      *
      * Then, cleanup and end transactions that are in the COMMITING state, and
      * move all transactions in the RUNNING state to RECOVERY_ABORTING.
@@ -525,7 +564,7 @@ public class ARIESRecoveryManager implements RecoveryManager {
         // Get start checkpoint LSN
         long LSN = masterRecord.lastCheckpointLSN;
 
-        // TODO(proj5): implement
+        // TODO(proj5_part2): implement
         return;
     }
 
@@ -540,7 +579,7 @@ public class ARIESRecoveryManager implements RecoveryManager {
      * - about a partition (Alloc/Free/Undo..Part), redo it.
      */
     void restartRedo() {
-        // TODO(proj5): implement
+        // TODO(proj5_part2): implement
         return;
     }
 
@@ -556,11 +595,27 @@ public class ARIESRecoveryManager implements RecoveryManager {
      * - if the new LSN is 0, end the transaction and remove it from the queue and transaction table.
      */
     void restartUndo() {
-        // TODO(proj5): implement
+        // TODO(proj5_part2): implement
         return;
     }
 
-    // TODO(proj5): add any helper methods needed
+    /**
+     * Removes pages from the DPT that are not dirty in the buffer manager. THIS IS SLOW
+     * and should only be used during recovery.
+     */
+    private void cleanDPT() {
+        Set<Long> dirtyPages = new HashSet<>();
+        bufferManager.iterPageNums((pageNum, dirty) -> {
+            if (dirty) dirtyPages.add(pageNum);
+        });
+        Map<Long, Long> oldDPT = new HashMap<>(dirtyPageTable);
+        dirtyPageTable.clear();
+        for (long pageNum : dirtyPages) {
+            if (oldDPT.containsKey(pageNum)) {
+                dirtyPageTable.put(pageNum, oldDPT.get(pageNum));
+            }
+        }
+    }
 
     // Helpers /////////////////////////////////////////////////////////////////
 

@@ -31,7 +31,7 @@ public class TestLogManager {
         diskSpaceManager.allocPart(0);
         this.bufferManager = new BufferManagerImpl(diskSpaceManager, new DummyRecoveryManager(), 1024,
                 new ClockEvictionPolicy());
-        logManager = new LogManagerImpl(bufferManager);
+        logManager = new LogManager(bufferManager);
     }
 
     @After

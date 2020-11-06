@@ -24,7 +24,7 @@ class TransactionTableEntry {
 
     long getSavepoint(String name) {
         if (!savepoints.containsKey(name)) {
-            throw new NoSuchElementException("transaction " + transaction.getTransNum() + " has no savepoint " +
+            throw new NoSuchElementException("transaction " + transactilon.getTransNum() + " has no savepoint " +
                                              name);
         }
         return savepoints.get(name);
