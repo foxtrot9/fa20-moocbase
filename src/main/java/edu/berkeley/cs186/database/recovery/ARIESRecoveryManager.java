@@ -157,7 +157,11 @@ public class ARIESRecoveryManager implements RecoveryManager {
      *    - if the record at the current LSN is undoable:
      *       - Get a compensation log record (CLR) by calling undo on the record
      *       - Flush if necessary
-     *       - Update the dirty page table if necessary
+     *       - Update the dirty page table if necessary in the following cases:
+     *          - You undo an update page record (this is the same as applying
+     *            the original update in reverse, which would dirty the page)
+     *          - You undo alloc page page record (note that freed pages are no
+     *            longer considered dirty)
      *       - Call redo on the CLR to perform the undo
      *    - update the current LSN to that of the next record to undo
      *
