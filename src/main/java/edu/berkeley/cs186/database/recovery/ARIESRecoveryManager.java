@@ -534,7 +534,7 @@ public class ARIESRecoveryManager implements RecoveryManager {
      * - if it's page-related (as opposed to partition-related),
      *   - add to touchedPages
      *   - acquire X lock
-     *   - update DPT (alloc/free/undoalloc/undofree always flushes changes to disk)
+     *   - update DPT (free/undoalloc always flushes changes to disk)
      *
      * If the log record is for a change in transaction status:
      * - clean up transaction (Transaction#cleanup) if END_TRANSACTION
@@ -552,11 +552,12 @@ public class ARIESRecoveryManager implements RecoveryManager {
      *   transaction table if the transaction has not finished yet, and acquire X locks.
      * - The status's in the transaction table should be updated if its possible
      *   to transition from the status in the table to the status in the
-     *   checkpoint. For example, running -> complete is a possible transition,
+     *   checkpoint. For example, running -> committing is a possible transition,
      *   but committing -> running is not.
      *
      * Then, cleanup and end transactions that are in the COMMITING state, and
-     * move all transactions in the RUNNING state to RECOVERY_ABORTING.
+     * move all transactions in the RUNNING state to RECOVERY_ABORTING. Remove
+     * transactions in the COMPLETE state from the transaction table.
      */
     void restartAnalysis() {
         // Read master record
