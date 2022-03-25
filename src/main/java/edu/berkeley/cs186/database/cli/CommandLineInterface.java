@@ -26,11 +26,11 @@ import edu.berkeley.cs186.database.table.Table;
 
 public class CommandLineInterface {
     private static String mascot = "\n\\|/  ___------___\n \\__|--%s______%s--|\n    |  %-9s |\n     ---______---\n";
-    private static int[] version = { 1, 8, 6 }; // {major, minor, build}
-    private static String label = "fa20";
+    private static int[] version = {1, 8, 6}; // {major, minor, build}
+    private static String label = "sp22";
     private static String[] institution = {
-        "berkeley", "berkley", "berklee", "Brocolli", "BeRKeLEy", "UC Zoom",
-        "   UCB  ", "go bears", "   #1  "
+            "berkeley", "berkley", "berklee", "Brocolli", "BeRKeLEy", "UC Zoom",
+            "   UCB  ", "go bears", "   #1  "
     };
     private static Random generator = new Random();
 
@@ -77,7 +77,7 @@ public class CommandLineInterface {
                 }
                 System.out.println("exit");
                 db.close();
-                System.out.println("Bye!"); // If MariaDB says it so can we :)
+                System.out.println("Bye!"); // If MariaDB says it so can we :)StringDataBox
                 return;
             }
 
@@ -148,10 +148,10 @@ public class CommandLineInterface {
                 // project out the last column.
                 QueryPlan plan = t.query("information_schema.tables");
                 List<String> columnNames = Arrays.asList(
-                    "table_name", "part_num", "page_num", "is_temporary"
+                        "table_name", "part_num", "page_num", "is_temporary"
                 );
                 List<String> prefixed = columnNames.stream().map(
-                    s -> "information_schema.tables." + s
+                        s -> "information_schema.tables." + s
                 ).collect(Collectors.toList());
                 plan.project(prefixed);
                 PrettyPrinter.printRecords(columnNames, plan.execute());
@@ -174,8 +174,8 @@ public class CommandLineInterface {
             t.close();
         } else {
             throw new IllegalArgumentException(String.format(
-                "`%s` is not a valid metacommand",
-                cmd
+                    "`%s` is not a valid metacommand",
+                    cmd
             ));
         }
     }
@@ -183,7 +183,7 @@ public class CommandLineInterface {
     private static List<String> startupMessages = Arrays
             .asList("Speaking with the buffer manager", "Saying grace hash",
                     "Parallelizing parking spaces", "Bulk loading exam preparations",
-                    "Declaring functional independence", "Maintaining long distance entity-relationships" );
+                    "Declaring functional independence", "Maintaining long distance entity-relationships");
 
     private static List<String> startupProblems = Arrays
             .asList("Rebuilding air quality index", "Extinguishing B+ forest fires",
